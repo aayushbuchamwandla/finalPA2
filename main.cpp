@@ -1,28 +1,23 @@
 // Spring '25
 // Instructor: Diba Mirza
 // Student name: Ashwin Kannan
-
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <ctime>
 #include <vector>
+#include <cstring>
 #include <algorithm>
+#include <limits.h>
 #include <iomanip>
+#include <set>
+#include <queue>
 #include <sstream>
-#include <map>
-
 using namespace std;
 
 #include "movies.h"
 
 bool parseLine(string &line, string &movieName, double &movieRating);
-
-// Helper: Find the lower bound index of the prefix
-vector<Movie>::iterator findPrefixStart(vector<Movie>& movies, const string& prefix) {
-    return lower_bound(movies.begin(), movies.end(), prefix, [](const Movie& m, const string& p) {
-        return m.name < p;
-    });
-}
 
 int main(int argc, char** argv){
     if (argc < 2){
@@ -32,6 +27,7 @@ int main(int argc, char** argv){
     }
 
     ifstream movieFile (argv[1]);
+
     if (movieFile.fail()){
         cerr << "Could not open file " << argv[1];
         exit(1);
@@ -39,18 +35,21 @@ int main(int argc, char** argv){
 
     string line, movieName;
     double movieRating;
-    map<string,double> movies;
-    vector<Movie> movies2;
 
+    vector<Movie> movies2;
     while (getline (movieFile, line) && parseLine(line, movieName, movieRating)){
-        movies[movieName] = movieRating;
-        movies2.emplace_back(movieName, movieRating);
+        movies2.push_back(Movie(movieName, movieRating));
     }
+
     movieFile.close();
 
     if (argc == 2){
-        for (auto& [name, rating] : movies) {
-            cout << name << ", " << rating << endl;
+        sort(movies2.begin(), movies2.end(), [](const Movie& a, const Movie& b) {
+            return a.name < b.name;
+        });
+
+        for (const Movie& m : movies2) {
+            cout << m.name << ", " << m.rating << endl;
         }
         return 0;
     }
@@ -62,11 +61,12 @@ int main(int argc, char** argv){
     }
 
     vector<string> prefixes;
-    while (getline(prefixFile, line)) {
-        if (!line.empty()) prefixes.push_back(line);
+    while (getline (prefixFile, line)) {
+        if (!line.empty()) {
+            prefixes.push_back(line);
+        }
     }
 
-    // Efficient step: sort once by name
     sort(movies2.begin(), movies2.end(), [](const Movie& a, const Movie& b) {
         return a.name < b.name;
     });
@@ -74,27 +74,25 @@ int main(int argc, char** argv){
     vector<string> finalLines;
 
     for (const string& prefix : prefixes) {
-        auto it = findPrefixStart(movies2, prefix);
-        vector<Movie> matches;
+        auto it = lower_bound(movies2.begin(), movies2.end(), prefix, [](const Movie& a, const string& p){
+            return a.name < p;
+        });
 
-        while (it != movies2.end() && it->name.compare(0, prefix.size(), prefix) == 0) {
-            matches.push_back(*it);
+        vector<Movie> shortened;
+        while (it != movies2.end() && it->name.rfind(prefix, 0) == 0) {
+            shortened.push_back(*it);
             ++it;
         }
 
-        if (matches.empty()) {
-            cout << "No movies found with prefix " << prefix << endl;
-        } else {
-            sort(matches.begin(), matches.end(), [](const Movie& a, const Movie& b) {
-                if (a.rating != b.rating) return a.rating > b.rating;
-                return a.name < b.name;
-            });
-
+        if (!shortened.empty()) {
+            PrintByRating(shortened);
             stringstream ss;
-            ss << "Best movie with prefix " << prefix << " is: " << matches[0].name
-               << " with rating " << fixed << setprecision(1) << matches[0].rating;
+            ss << "Best movie with prefix " << prefix << " is: " << shortened[0].name << " with rating " << std::fixed << std::setprecision(1) << shortened[0].rating;
             finalLines.push_back(ss.str());
+        } else {
+            cout << "No movies found with prefix " << prefix << endl;
         }
+        cout << endl;
     }
 
     for (const string& s : finalLines) {
