@@ -1,14 +1,21 @@
-#include <iostream>
-#include <map>
+#include <algorithm>
 #include <vector>
-using namespace std;
 
 struct Movie {
     string name;
     double rating;
 
     Movie(string name, double rating) : name(name), rating(rating) {}
+    
+    // For sorting by name
+    bool operator<(const Movie& other) const {
+        return name < other.name;
+    }
 };
 
-void PrintByRating(vector<Movie> &m); 
-bool operations(Movie m1, Movie m2);
+// For sorting by rating then name
+bool compareByRating(const Movie& a, const Movie& b);
+
+// Binary search based prefix search
+void findMoviesByPrefix(const vector<Movie>& movies, const string& prefix, 
+                       vector<Movie>& results);
