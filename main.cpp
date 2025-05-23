@@ -1,6 +1,3 @@
-// Spring '25
-// Instructor: Diba Mirza
-// Student name: Ashwin Kannan
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -102,7 +99,20 @@ int main(int argc, char** argv){
                 return m.name < p.name;
             });
 
-        auto upper_it = std::upper_bound(allMovies.begin(), allMovies.end(), Movie(prefix + "~", 0.0),
+        string upper_bound_str = prefix;
+        if (!upper_bound_str.empty()) {
+            size_t last_char_idx = upper_bound_str.length() - 1;
+            char last_char = upper_bound_str[last_char_idx];
+            if (last_char == '~' || last_char == 255) {
+                upper_bound_str += '~';
+            } else {
+                upper_bound_str[last_char_idx]++;
+            }
+        } else {
+            upper_bound_str = "~";
+        }
+
+        auto upper_it = std::upper_bound(allMovies.begin(), allMovies.end(), Movie(upper_bound_str, 0.0),
             [](const Movie& m, const Movie& p) {
                 return m.name < p.name;
             });
@@ -115,9 +125,10 @@ int main(int argc, char** argv){
         }
 
         if (matchingMovies.empty()) {
-            cout << "No movies found with prefix " << prefix << endl;
+            cout << "No movies found with prefix " << prefix;
         } else {
             PrintByRating(matchingMovies);
+            cout << endl;
         }
 
         if (!matchingMovies.empty()) {
@@ -129,7 +140,6 @@ int main(int argc, char** argv){
                << std::fixed << std::setprecision(1) << matchingMovies.at(0).rating;
             bestMovieOutputLines.push_back(ss.str());
         }
-        cout << endl;
     }
 
     for (const string& s : bestMovieOutputLines) {
