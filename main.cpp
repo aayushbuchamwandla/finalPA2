@@ -119,7 +119,8 @@ int main(int argc, char** argv){
 
         vector<Movie> matchingMovies;
         for (auto it = lower_it; it != upper_it; ++it) {
-            if (it->name.rfind(prefix, 0) == 0) {
+            // CRITICAL FIX: Changed rfind to find for correct "starts with" check
+            if (it->name.find(prefix) == 0) {
                 matchingMovies.push_back(*it);
             }
         }
