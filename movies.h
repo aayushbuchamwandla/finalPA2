@@ -1,22 +1,14 @@
-#ifndef MOVIES_H
-#define MOVIES_H
-
-#include <string>
+#include <iostream>
+#include <map>
 #include <vector>
-#include <algorithm>
+using namespace std;
 
 struct Movie {
-    std::string name;
+    string name;
     double rating;
 
-    Movie(const std::string& n, double r) : name(n), rating(r) {}
-    Movie() : name(""), rating(0.0) {}
-
-    bool operator<(const Movie& other) const {
-        return name < other.name;
-    }
+    Movie(string name, double rating) : name(name), rating(rating) {}
 };
 
-void PrintByRating(std::vector<Movie>& m);
-
-#endif
+void PrintByRating(vector<Movie> &m); 
+bool operations(Movie m1, Movie m2);
