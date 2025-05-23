@@ -1,108 +1,118 @@
+// Spring '25
+// Instructor: Diba Mirza
+// Student name: Ashwin Kannan
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <vector>
 #include <string>
+#include <ctime>
+#include <vector>
+#include <cstring>
 #include <algorithm>
-#include "movies.h"
-
+#include <limits.h>
+#include <iomanip>
+#include <set>
+#include <queue>
+#include <sstream>
 using namespace std;
 
-// Sort by movie name alphabetically
-bool movieAlphabetical(const Movie& a, const Movie& b) {
-    return a.name < b.name;
-}
+#include "movies.h"
 
-// Sort by rating (high to low), then name (alphabetically)
-bool operations(const Movie& a, const Movie& b) {
-    if (a.rating != b.rating)
-        return a.rating > b.rating;
-    return a.name < b.name;
-}
+bool parseLine(string &line, string &movieName, double &movieRating);
 
-// Binary search to find the first index where movie name starts with prefix
-int lowerBoundPrefix(const vector<Movie>& movies, const string& prefix) {
-    int low = 0, high = movies.size();
-    while (low < high) {
-        int mid = (low + high) / 2;
-        if (movies[mid].name.compare(0, prefix.size(), prefix) < 0)
-            low = mid + 1;
-        else
-            high = mid;
-    }
-    return low;
-}
-
-int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        cerr << "Usage: ./runMovies movieFile [prefixFile]" << endl;
-        return 1;
+int main(int argc, char** argv){
+    if (argc < 2){
+        cerr << "Not enough arguments provided (need at least 1 argument)." << endl;
+        cerr << "Usage: " << argv[ 0 ] << " moviesFilename prefixFilename " << endl;
+        exit(1);
     }
 
-    // Read movie data
-    ifstream movieFile(argv[1]);
-    if (!movieFile) {
-        cerr << "Error opening movie file." << endl;
-        return 1;
+    ifstream movieFile (argv[1]);
+ 
+    if (movieFile.fail()){
+        cerr << "Could not open file " << argv[1];
+        exit(1);
+    }
+    // Create an object of a STL data-structure to store all the movies
+
+    string line, movieName;
+    double movieRating;
+    // Read each file and store the name and rating
+
+    map<string,double> movies;
+    vector<Movie> movies2;
+    while (getline (movieFile, line) && parseLine(line, movieName, movieRating)){
+            // Algorithm 1 (movies[movieName] = movieRating;)
+            movies[movieName] = movieRating;
+            //Algorithm 2
+            movies2.push_back(Movie(movieName, movieRating));
+            // Use std::string movieName and double movieRating
+            // to construct your Movie objects
+            // cout << movieName << " has rating " << movieRating << endl;
+            // insert elements into your data structure
     }
 
-    vector<Movie> movies;
-    string line;
-    while (getline(movieFile, line)) {
-        size_t comma = line.rfind(',');
-        if (comma == string::npos) continue;
-        string name = line.substr(0, comma);
-        double rating = stod(line.substr(comma + 1));
-        movies.emplace_back(name, rating);
-    }
     movieFile.close();
 
-    // Sort all movies alphabetically
-    sort(movies.begin(), movies.end(), movieAlphabetical);
-
-    // If no prefix file is provided
-    if (argc == 2) {
-        for (const Movie& m : movies) {
-            cout << m.name << ", " << m.rating << endl;
+    if (argc == 2){
+        //Algorithm 1
+        //print all the movies in ascending alphabetical order of movie names
+        for (auto it = movies.begin(); it != movies.end(); ++it) {
+            cout<<it->first<<", "<<it->second<<endl;
         }
         return 0;
     }
 
-    // Read prefixes
-    ifstream prefixFile(argv[2]);
-    if (!prefixFile) {
-        cerr << "Error opening prefix file." << endl;
-        return 1;
+    ifstream prefixFile (argv[2]);
+
+    if (prefixFile.fail()) {
+        cerr << "Could not open file " << argv[2];
+        exit(1);
     }
 
     vector<string> prefixes;
-    while (getline(prefixFile, line)) {
-        prefixes.push_back(line);
-    }
-    prefixFile.close();
-
-    // Process each prefix
-    for (const string& prefix : prefixes) {
-        vector<Movie> matches;
-        int idx = lowerBoundPrefix(movies, prefix);
-        while (idx < movies.size() &&
-               movies[idx].name.compare(0, prefix.size(), prefix) == 0) {
-            matches.push_back(movies[idx]);
-            idx++;
+    while (getline (prefixFile, line)) {
+        if (!line.empty()) {
+            prefixes.push_back(line);
         }
+    }
 
-        if (matches.empty()) {
-            cout << "No movies found with prefix " << prefix << endl;
-        } else {
-            sort(matches.begin(), matches.end(), operations);
-            for (const Movie& m : matches) {
-                cout << m.name << ", " << m.rating << endl;
+    vector<Movie> shortened;
+    vector<string> finalLines;
+    for (int i=0; i<prefixes.size(); i++) {
+        for (int j=0; j<movies2.size(); j++) {
+            if ((movies2.at(j).name).find(prefixes.at(i))==0) {
+                shortened.push_back(Movie(movies2.at(j).name,movies2.at(j).rating));
             }
-            cout << "Best movie with prefix " << prefix
-                 << " is: " << matches[0].name
-                 << " with rating " << matches[0].rating << endl;
         }
+        PrintByRating(shortened);
+        if (shortened.size()!=0) {
+            stringstream ss;
+            ss.str("");
+            ss.clear();
+            ss<<"Best movie with prefix "<<prefixes.at(i)<<" is: "<<shortened.at(0).name<<" with rating "<<std::fixed<<std::setprecision(1)<<shortened.at(0).rating;
+            line = ss.str();
+            finalLines.push_back(line);
+        }
+        else {
+            cout<<"No movies found with prefix " + prefixes.at(i);
+        }
+        shortened.clear();
+        cout<<endl;
     }
-
+    for (string s: finalLines) {
+        cout<<s<<endl;
+    }
     return 0;
+}
+
+/* Add your run time analysis for part 3 of the assignment here as commented block*/
+
+bool parseLine(string &line, string &movieName, double &movieRating) {
+    int commaIndex = line.find_last_of(",");
+    movieName = line.substr(0, commaIndex);
+    movieRating = stod(line.substr(commaIndex+1));
+    if (movieName[0] == '\"') {
+        movieName = movieName.substr(1, movieName.length() - 2);
+    }
+    return true;
 }
