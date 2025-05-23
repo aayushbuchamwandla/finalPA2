@@ -1,19 +1,40 @@
-#include <iostream>
 #include "movies.h"
-using namespace std;
+#include <algorithm>
 
-bool operations(Movie m1, Movie m2) {
-    if (m1.rating!=m2.rating) {
-        return m1.rating>m2.rating;
+bool compareByRating(const Movie& a, const Movie& b) {
+    if (a.rating != b.rating) {
+        return a.rating > b.rating;
     }
-    else {
-        return m1.name<m2.name;
-    }
+    return a.name < b.name;
 }
 
-void PrintByRating(vector<Movie> &m) {
-    sort(m.begin(),m.end(),operations);
-    for (int i=0; i<m.size(); i++) {
-        cout<<m.at(i).name<<", "<<m.at(i).rating<<endl;
+void findMoviesByPrefix(const std::vector<Movie>& movies, const std::string& prefix, 
+                       std::vector<Movie>& results) {
+    results.clear();
+    
+    if (prefix.empty()) {
+        return;
     }
+    
+    // Find lower bound
+    auto low = std::lower_bound(movies.begin(), movies.end(), 
+                              Movie(prefix, 0),
+                              [](const Movie& m, const Movie& value) {
+                                  return m.name < value.name;
+                              });
+    
+    // Find upper bound (prefix incremented)
+    std::string upperPrefix = prefix;
+    upperPrefix.back()++;
+    auto high = std::lower_bound(movies.begin(), movies.end(), 
+                               Movie(upperPrefix, 0),
+                               [](const Movie& m, const Movie& value) {
+                                   return m.name < value.name;
+                               });
+    
+    // Copy matches
+    results.assign(low, high);
+    
+    // Sort by rating
+    std::sort(results.begin(), results.end(), compareByRating);
 }
