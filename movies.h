@@ -1,11 +1,15 @@
-#include <algorithm>
+#ifndef MOVIES_H
+#define MOVIES_H
+
+#include <iostream>
 #include <vector>
+#include <string>
 
 struct Movie {
-    string name;
+    std::string name;
     double rating;
 
-    Movie(string name, double rating) : name(name), rating(rating) {}
+    Movie(std::string name, double rating) : name(name), rating(rating) {}
     
     // For sorting by name
     bool operator<(const Movie& other) const {
@@ -17,5 +21,7 @@ struct Movie {
 bool compareByRating(const Movie& a, const Movie& b);
 
 // Binary search based prefix search
-void findMoviesByPrefix(const vector<Movie>& movies, const string& prefix, 
-                       vector<Movie>& results);
+void findMoviesByPrefix(const std::vector<Movie>& movies, const std::string& prefix, 
+                       std::vector<Movie>& results);
+
+#endif // MOVIES_H
