@@ -1,4 +1,4 @@
-prefix.small.txttwo
+two
 xyz
 xxx
 a
