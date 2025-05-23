@@ -1,118 +1,101 @@
-// Spring '25
-// Instructor: Diba Mirza
-// Student name: Ashwin Kannan
-
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <ctime>
 #include <vector>
-#include <cstring>
 #include <algorithm>
-#include <limits.h>
 #include <iomanip>
-#include <set>
-#include <queue>
 #include <sstream>
-#include <map>
-using namespace std;
-
 #include "movies.h"
 
-bool parseLine(string &line, string &movieName, double &movieRating);
+bool parseLine(std::string &line, std::string &movieName, double &movieRating);
 
-int main(int argc, char** argv){
-    if (argc < 2){
-        cerr << "Not enough arguments provided (need at least 1 argument)." << endl;
-        cerr << "Usage: " << argv[0] << " moviesFilename prefixFilename " << endl;
-        exit(1);
+int main(int argc, char** argv) {
+    if (argc < 2) {
+        std::cerr << "Not enough arguments provided (need at least 1 argument)." << std::endl;
+        std::cerr << "Usage: " << argv[0] << " moviesFilename prefixFilename " << std::endl;
+        return 1;
     }
 
-    ifstream movieFile(argv[1]);
-    if (movieFile.fail()){
-        cerr << "Could not open file " << argv[1];
-        exit(1);
+    std::ifstream movieFile(argv[1]);
+    if (movieFile.fail()) {
+        std::cerr << "Could not open file " << argv[1] << std::endl;
+        return 1;
     }
 
-    string line, movieName;
+    std::vector<Movie> movies;
+    std::string line, movieName;
     double movieRating;
 
-    map<string, double> movies;
-    vector<Movie> movies2;
-
+    // Read and store all movies
     while (getline(movieFile, line) && parseLine(line, movieName, movieRating)) {
-        movies[movieName] = movieRating;
-        movies2.push_back(Movie(movieName, movieRating));
+        movies.emplace_back(movieName, movieRating);
     }
-
     movieFile.close();
 
-    if (argc == 2){
-        for (auto it = movies.begin(); it != movies.end(); ++it) {
-            cout << it->first << ", " << it->second << endl;
+    // Sort movies by name once
+    std::sort(movies.begin(), movies.end());
+
+    if (argc == 2) {
+        // Print all movies in alphabetical order
+        for (const auto& movie : movies) {
+            std::cout << movie.name << ", " << movie.rating << std::endl;
         }
         return 0;
     }
 
-    ifstream prefixFile(argv[2]);
+    std::ifstream prefixFile(argv[2]);
     if (prefixFile.fail()) {
-        cerr << "Could not open file " << argv[2];
-        exit(1);
+        std::cerr << "Could not open file " << argv[2] << std::endl;
+        return 1;
     }
 
-    vector<string> prefixes;
+    std::vector<std::string> prefixes;
     while (getline(prefixFile, line)) {
         if (!line.empty()) {
             prefixes.push_back(line);
         }
     }
+    prefixFile.close();
 
-    vector<Movie> shortened;
-    vector<string> finalLines;
+    std::vector<Movie> matches;
+    std::vector<std::string> bestMovieLines;
 
-    for (int i = 0; i < prefixes.size(); i++) {
-        string prefixLower = prefixes[i];
-        transform(prefixLower.begin(), prefixLower.end(), prefixLower.begin(), ::tolower);
+    for (const auto& prefix : prefixes) {
+        findMoviesByPrefix(movies, prefix, matches);
 
-        for (int j = 0; j < movies2.size(); j++) {
-            string movieNameLower = movies2[j].name;
-            transform(movieNameLower.begin(), movieNameLower.end(), movieNameLower.begin(), ::tolower);
-
-            if (movieNameLower.find(prefixLower) == 0) {
-                shortened.push_back(Movie(movies2[j].name, movies2[j].rating));
-            }
-        }
-
-        PrintByRating(shortened);
-
-        if (!shortened.empty()) {
-            stringstream ss;
-            ss << "Best movie with prefix " << prefixes[i] << " is: " << shortened[0].name
-               << " with rating " << fixed << setprecision(1) << shortened[0].rating;
-            finalLines.push_back(ss.str());
+        if (matches.empty()) {
+            std::cout << "No movies found with prefix " << prefix << std::endl;
         } else {
-            cout << "No movies found with prefix " << prefixes[i] << endl;
-        }
+            // Print all matches
+            for (const auto& movie : matches) {
+                std::cout << movie.name << ", " << movie.rating << std::endl;
+            }
+            std::cout << std::endl;
 
-        shortened.clear();
-        cout << endl;
+            // Store best movie line
+            std::stringstream ss;
+            ss << "Best movie with prefix " << prefix << " is: " 
+               << matches[0].name << " with rating " << std::fixed << std::setprecision(1) 
+               << matches[0].rating;
+            bestMovieLines.push_back(ss.str());
+        }
     }
 
-    for (const string& s : finalLines) {
-        cout << s << endl;
+    // Print best movies
+    for (const auto& line : bestMovieLines) {
+        std::cout << line << std::endl;
     }
 
     return 0;
 }
 
-/* Add your run time analysis for part 3 of the assignment here as commented block */
-
-bool parseLine(string &line, string &movieName, double &movieRating) {
+bool parseLine(std::string &line, std::string &movieName, double &movieRating) {
     int commaIndex = line.find_last_of(",");
     movieName = line.substr(0, commaIndex);
-    movieRating = stod(line.substr(commaIndex + 1));
+    movieRating = stod(line.substr(commaIndex+1));
     if (movieName[0] == '\"') {
         movieName = movieName.substr(1, movieName.length() - 2);
     }
     return true;
 }
+
