@@ -14,13 +14,13 @@ int main(int argc, char** argv) {
     if (argc < 2) {
         cerr << "Not enough arguments provided (need at least 1 argument)." << endl;
         cerr << "Usage: " << argv[0] << " moviesFilename prefixFilename " << endl;
-        exit(1);
+        return(1);
     }
 
     ifstream movieFile(argv[1]);
     if (movieFile.fail()) {
         std::cerr << "Could not open file " << argv[1] << std::endl;
-        exit(1);
+        return(1);
     }
 
     vector<Movie> movies;
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
     ifstream prefixFile(argv[2]);
     if (prefixFile.fail()) {
         cerr << "Could not open file " << argv[2] << std::endl;
-        exit(1);
+        return(1);
     }
 
     vector<string> prefixes;
