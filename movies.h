@@ -1,3 +1,6 @@
+// Spring '25
+// Instructor: Diba Mirza
+// Student name: Ashwin Kannan, Aayush Buchamwandla
 #ifndef MOVIES_H
 #define MOVIES_H
 
