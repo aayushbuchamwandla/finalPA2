@@ -1,5 +1,7 @@
+// Spring '25
+// Instructor: Diba Mirza
+// Student name: Ashwin Kannan, Aayush Buchamwandla
 #include "movies.h"
-#include <algorithm>
 
 using namespace std;
 
